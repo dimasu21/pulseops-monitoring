@@ -6,6 +6,7 @@ import { Bell, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { LanguageToggle } from "@/components/language-toggle"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,6 +48,7 @@ export function Header() {
       </div>
       
       <div className="flex items-center gap-4">
+        <LanguageToggle />
         <ThemeToggle />
         
         <DropdownMenu>
