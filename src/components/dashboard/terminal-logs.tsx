@@ -79,7 +79,7 @@ export function TerminalLogs() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Select value={levelFilter} onValueChange={setLevelFilter}>
+          <Select value={levelFilter} onValueChange={(val) => setLevelFilter(val || "ALL")}>
             <SelectTrigger className="h-8 w-[120px] bg-[#0d1117] border-gray-700 text-gray-300 focus:ring-0 focus:ring-offset-0">
               <SelectValue placeholder="Level" />
             </SelectTrigger>
