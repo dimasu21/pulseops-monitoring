@@ -1,0 +1,143 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  ENGINEER
+  VIEWER
+}
+
+enum ServiceStatus {
+  HEALTHY
+  WARNING
+  CRITICAL
+  OFFLINE
+}
+
+enum IncidentSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+enum IncidentStatus {
+  OPEN
+  INVESTIGATING
+  RESOLVED
+}
+
+enum LogLevel {
+  INFO
+  WARN
+  ERROR
+  DEBUG
+}
+
+model User {
+  id            String    @id @default(uuid())
+  name          String?
+  email         String    @unique
+  passwordHash  String?
+  image         String?
+  role          Role      @default(VIEWER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  incidentsAssigned Incident[] @relation("AssignedTo")
+  incidentsCreated  Incident[] @relation("CreatedBy")
+  auditLogs         AuditLog[]
+}
+
+model Service {
+  id          String        @id @default(uuid())
+  name        String
+  description String?
+  status      ServiceStatus @default(HEALTHY)
+  uptime      Float         @default(100.0) // percentage
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  incidents   Incident[]
+  metrics     Metric[]
+  logs        Log[]
+}
+
+model Incident {
+  id          String           @id @default(uuid())
+  title       String
+  description String?
+  severity    IncidentSeverity
+  status      IncidentStatus   @default(OPEN)
+  serviceId   String
+  service     Service          @relation(fields: [serviceId], references: [id])
+  
+  createdBy   String?
+  creator     User?            @relation("CreatedBy", fields: [createdBy], references: [id])
+  assignedTo  String?
+  assignee    User?            @relation("AssignedTo", fields: [assignedTo], references: [id])
+  
+  aiAnalysis  String?          @db.Text
+  
+  createdAt   DateTime         @default(now())
+  resolvedAt  DateTime?
+  updatedAt   DateTime         @updatedAt
+}
+
+model Metric {
+  id        String   @id @default(uuid())
+  serviceId String
+  service   Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  
+  cpu       Float    // percentage
+  ram       Float    // MB
+  latency   Float    // ms
+  rps       Int      // Requests per second
+  errorRate Float    // percentage
+  
+  timestamp DateTime @default(now())
+
+  @@index([serviceId, timestamp])
+}
+
+model Log {
+  id        String   @id @default(uuid())
+  serviceId String
+  service   Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  level     LogLevel
+  message   String
+  metadata  Json?
+  
+  timestamp DateTime @default(now())
+
+  @@index([serviceId, timestamp])
+  @@index([level])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  link      String?
+  
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String
+  details   Json?
+  
+  createdAt DateTime @default(now())
+}
