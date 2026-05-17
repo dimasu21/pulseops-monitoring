@@ -8,21 +8,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useLanguage } from "@/components/language-provider"
 
 export function LanguageToggle() {
-  const [lang, setLang] = React.useState("EN")
-
-  React.useEffect(() => {
-    const saved = localStorage.getItem("pulseops-lang")
-    if (saved) {
-      setLang(saved)
-    }
-  }, [])
+  const { lang, setLang } = useLanguage()
 
   const changeLanguage = (newLang: string) => {
-    setLang(newLang)
-    localStorage.setItem("pulseops-lang", newLang)
-    // In a real app, this would trigger an i18n re-render or redirect
+    setLang(newLang as 'EN' | 'ID')
   }
 
   return (
